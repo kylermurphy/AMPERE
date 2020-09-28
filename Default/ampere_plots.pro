@@ -5,7 +5,8 @@ pro ampere_plot_j, $
   amp_d, $ AMPERE data from read_ampere_ncdf
   tstart, $ ;start time to plot in string or themis time double
   jmin=jmin, $
-  jmax=jmax
+  jmax=jmax, $
+  p_pos = p_pos 
   
   
   if keyword_set(jmin) then jmin = jmin else jmin = 0.2
@@ -14,6 +15,14 @@ pro ampere_plot_j, $
   ;setup plotting region
   ;want option for extra key words here
   ampere_plots
+  
+  ;get plot position
+  ; so that one can add 
+  ; a color bar after 
+  tr = convert_coord(!p.clip[2],!p.clip[3], /device,/to_normal)
+  bl = convert_coord(!p.clip[0],!p.clip[1], /device,/to_normal)
+  
+  p_pos = [bl[0],bl[1],tr[0],tr[1]]
   
   ;find plotting position
   yr = long(time_string(tstart, tformat='YYYY'))
@@ -88,7 +97,7 @@ pro ampere_plot_j, $
   mlt_axis, mlt_arr, xmax, axis_col=44
   ;plot mlt legend
   mlt_legend
-  stop
+  
 end
 
 ;plot AMPERE fB vectors
@@ -287,7 +296,7 @@ pro ampere_vec_plot, $
     if yend[i] gt ymax or yend[i] lt ymin then continue
     if xend[i] gt xmax or xend[i] lt xmin then continue
 
-    plots, xstart[i],ystart[i], psym = sym(1), symsize = 0.5
+    plots, xstart[i],ystart[i], psym = sym(1), symsize = 0.2
     plots, xstart[i],ystart[i]
     plots, xend[i],yend[i], /continue
   endfor
@@ -299,7 +308,7 @@ pro ampere_vec_plot, $
   eend   = estart+250/vsize
 
   loadct, 39, /silent
-  plots, estart,nstart, psym = sym(1), symsize = 0.5
+  plots, estart,nstart, psym = sym(1), symsize = 0.2
   plots, estart,nstart
   plots, eend,nend, /continue
   leg_pos = convert_coord(eend,nend,/data,/to_device)
@@ -339,10 +348,21 @@ end
 
 ;main
 fixplot
+ps = 1
 
-window, 0, xsize = 1450, ysize = 450
+window, 0, xsize = 900, ysize = 300
 !p.multi = [0,3,1]
 !x.margin = [15,15]
+
+if ps eq 1 then begin
+  ps_s = PXPERFECT( )
+  wdelete, 0
+  set_plot,'ps'
+  device, _EXTRA=ps_s, $
+    /color, $
+    filename = 'C:\Users\krmurph1\OneDrive\MagImaging_2019\AMPERE_example.ps'
+  pcol = !p.color
+endif
 
 ; get db data
 db = AMPERE_db_rotate(ldate='20170831')
@@ -354,7 +374,21 @@ pt = '2017-08-31/11:30:00'
 
 ampere_plot_db,db.mlat_geo,db.mlt, db.mv_east1, db.mv_north1,db.t_th, pt
 ampere_plot_fb, amp, pt
-ampere_plot_j, amp, pt
+ampere_plot_j, amp, pt, jmin=jmin, jmax=jmax, p_pos=p_pos
+
+c_pos = [p_pos[0],p_pos[3]+0.05, p_pos[2], p_pos[3]+0.05+0.02]
+
+!p.charsize=1.5
+colorbar_krm,c_pos,-1*jmax,jmax,$
+  42,ct_file='C:\Users\krmurph1\Google Drive\Work\idl\colortable\krm.tbl', $
+  /top, c_title = 'FAC - uA/m!U2!N', tl = -0.8
+
+if ps eq 0 then begin
+  device,/close
+  fixplot
+endif
 
 end
+
+
 
