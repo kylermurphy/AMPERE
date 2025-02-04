@@ -57,7 +57,7 @@ pro ampere_plot_j, $
   
   
   ;fill and plot JR
-  loadct, 42,file = 'C:\Users\krmurph1\Google Drive\Work\idl\colortable\krm.tbl', /silent
+  loadct, 42,file = 'D:\idl\colortable\krm.tbl', /silent
   for i=0L, n_elements(jr_p) - 1 do begin
 
     mlt_s = ((mlt_p[i]-0.5)*360./24.)*!dtor - !pi/2.
@@ -348,7 +348,7 @@ end
 
 ;main
 fixplot
-ps = 1
+ps = 0
 
 window, 0, xsize = 900, ysize = 300
 !p.multi = [0,3,1]
@@ -365,20 +365,23 @@ if ps eq 1 then begin
 endif
 
 ; get db data
-db = AMPERE_db_rotate(ldate='20170831')
+;db = AMPERE_db_rotate(ldate='20170831')
 ; get fittend and current data
-read_ampere_ncdf,'D:\data\AMPERE\20170831.0000.86400.120.north.grd.ncdf', amp
+;read_ampere_ncdf,"D:\data\AMPERE\20170831.1000.7200.600.north.grd.ncdf", amp
+read_ampere_ncdf,"F:\data\AMPERE\fitncdf\k060_m08\2015\amp_capfit_20150623_k060_m08_north.ncdf", amp
 
 pt = '2017-08-31/11:30:00'
+pt = '2015-06-23/12:00:00'
 
 
-ampere_plot_db,db.mlat_geo,db.mlt, db.mv_east1, db.mv_north1,db.t_th, pt
-ampere_plot_fb, amp, pt
+;ampere_plot_db,db.mlat_geo,db.mlt, db.mv_east1, db.mv_north1,db.t_th, pt
+;ampere_plot_fb, amp, pt
 ampere_plot_j, amp, pt, jmin=jmin, jmax=jmax, p_pos=p_pos
 
 c_pos = [p_pos[0],p_pos[3]+0.05, p_pos[2], p_pos[3]+0.05+0.02]
 
 !p.charsize=1.5
+loadct, 42,file = 'D:\idl\colortable\krm.tbl', /silent
 colorbar_krm,c_pos,-1*jmax,jmax,$
   42,ct_file='C:\Users\krmurph1\Google Drive\Work\idl\colortable\krm.tbl', $
   /top, c_title = 'FAC - uA/m!U2!N', tl = -0.8
